@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginForm() {
@@ -19,16 +19,15 @@ export default function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
 
     try {
       const result = await login(email, password);
       if (!result.success) {
-        setError(result.error || 'Error al iniciar sesión');
+        console.error(result.error || 'Error al iniciar sesión');
       }
     } catch (error) {
-      setError('Error de conexión');
+      console.error('Error de conexión');
     } finally {
       setIsLoading(false);
     }
@@ -44,11 +43,6 @@ export default function LoginForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
           
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

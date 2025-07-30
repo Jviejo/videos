@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function RegisterForm() {
@@ -22,16 +22,15 @@ export default function RegisterForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     // Validaciones
     if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden');
+      console.error('Las contraseñas no coinciden');
       return;
     }
 
     if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
+      console.error('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
@@ -40,10 +39,10 @@ export default function RegisterForm() {
     try {
       const result = await register(email, password, name);
       if (!result.success) {
-        setError(result.error || 'Error al registrar usuario');
+        console.error(result.error || 'Error al registrar usuario');
       }
     } catch (error) {
-      setError('Error de conexión');
+      console.error('Error de conexión');
     } finally {
       setIsLoading(false);
     }
@@ -59,11 +58,6 @@ export default function RegisterForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
           
           <div className="space-y-2">
             <Label htmlFor="name">Nombre completo</Label>
