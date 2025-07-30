@@ -8,31 +8,32 @@ if (!process.env.MONGODB_URI) {
 const uri = process.env.MONGODB_URI;
 const options = {};
 console.log(uri);
-let client;
-let clientPromise: Promise<MongoClient>;
+const client = new MongoClient(uri, options);
+const clientPromise = client.connect();
 
 // Siempre conecta usando process.env.MONGODB_URI (ya está en la variable uri)
 // y asegura que el cliente se cree correctamente tanto en dev como en prod.
 
-let globalWithMongo = global as typeof globalThis & {
-  _mongoClientPromise?: Promise<MongoClient>;
-};
 
-if (process.env.NODE_ENV === 'development') {
-  if (!globalWithMongo._mongoClientPromise) {
-    console.log('Connecting to MongoDB in development mode');
-    globalWithMongo._mongoClientPromise = new MongoClient(uri, options).connect();
-  }
-  // console.log('Connected to MongoDB in development mode');
-  // globalWithMongo._mongoClientPromise = new MongoClient(uri, options).connect();  
-  // clientPromise = globalWithMongo._mongoClientPromise;
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
-} else {
-  console.log('Connecting to MongoDB in production mode');
-  client = new MongoClient(uri, options);
-  clientPromise = client.connect();
-}
+
+// const globalWithMongo = global as typeof globalThis & {
+//   _mongoClientPromise?: Promise<MongoClient>;
+// };
+
+// if (process.env.NODE_ENV === 'development') {
+//   if (!globalWithMongo._mongoClientPromise) {
+//     console.log('Connecting to MongoDB in development mode');
+//     globalWithMongo._mongoClientPromise = new MongoClient(uri, options).connect();
+//   }
+//   // console.log('Connected to MongoDB in development mode');
+//   // globalWithMongo._mongoClientPromise = new MongoClient(uri, options).connect();  
+//   // clientPromise = globalWithMongo._mongoClientPromise;
+  
+// } else {
+//   console.log('Connecting to MongoDB in production mode');
+//   client = new MongoClient(uri, options);
+//   clientPromise = client.connect();
+// }
 
 // Export a module-scoped MongoClient promise. By doing this in a
 // separate module, the client can be shared across functions.
