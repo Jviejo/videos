@@ -41,7 +41,7 @@ export default function RegisterForm() {
       if (!result.success) {
         console.error(result.error || 'Error al registrar usuario');
       }
-    } catch (error) {
+    } catch {
       console.error('Error de conexión');
     } finally {
       setIsLoading(false);

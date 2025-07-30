@@ -26,7 +26,7 @@ export default function LoginForm() {
       if (!result.success) {
         console.error(result.error || 'Error al iniciar sesión');
       }
-    } catch (error) {
+    } catch {
       console.error('Error de conexión');
     } finally {
       setIsLoading(false);
