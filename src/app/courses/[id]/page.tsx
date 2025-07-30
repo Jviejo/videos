@@ -175,7 +175,7 @@ export default function CourseDetail() {
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        <Link href={`/player/${video._id}`}>
+                        <Link href={video.url}>
                           <Button size="sm" variant="outline">
                             <Play className="h-4 w-4 mr-2" />
                             Reproducir
