@@ -17,6 +17,7 @@ interface AuthContextType {
   logout: () => void;
   register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -112,7 +113,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     register,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    isAdmin: user?.role === 'admin'
   };
 
   return (

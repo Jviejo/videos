@@ -37,7 +37,7 @@ interface Course {
 
 export default function CourseDetail() {
   const { id } = useParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [showVideoForm, setShowVideoForm] = useState(false);
@@ -201,13 +201,15 @@ export default function CourseDetail() {
         <div className="mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Videos del Curso</h2>
-            <Button 
-              onClick={() => setShowVideoForm(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Agregar Video
-            </Button>
+            {isAdmin && (
+              <Button 
+                onClick={() => setShowVideoForm(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Agregar Video
+              </Button>
+            )}
           </div>
           
           {course.videos && course.videos.length > 0 ? (
@@ -245,23 +247,27 @@ export default function CourseDetail() {
                           </Button>
                         </Link>
                         
-                        <Button 
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditVideo(video)}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar
-                        </Button>
-                        
-                        <Button 
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteVideo(video)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Eliminar
-                        </Button>
+                        {isAdmin && (
+                          <>
+                            <Button 
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleEditVideo(video)}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Editar
+                            </Button>
+                            
+                            <Button 
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteVideo(video)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Eliminar
+                            </Button>
+                          </>
+                        )}
                         
                         <a 
                           href={video.url} 

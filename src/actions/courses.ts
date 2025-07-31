@@ -17,6 +17,11 @@ export interface Course {
 }
 
 export async function addCourse(formData: FormData) {
+  // TODO: Add server-side admin role validation when session management is implemented
+  // Example: const userId = await getCurrentUserId(); 
+  // const isAdmin = await validateAdminRole(userId);
+  // if (!isAdmin) return { success: false, message: 'Acceso denegado' };
+  
   try {
     const client = await clientPromise;
     const db = client.db('formacion');
@@ -54,6 +59,8 @@ export async function addCourse(formData: FormData) {
 }
 
 export async function updateCourse(courseId: string, formData: FormData) {
+  // TODO: Add server-side admin role validation when session management is implemented
+  
   try {
     const client = await clientPromise;
     const db = client.db('formacion');
@@ -100,6 +107,8 @@ export async function updateCourse(courseId: string, formData: FormData) {
 }
 
 export async function deleteCourse(courseId: string) {
+  // TODO: Add server-side admin role validation when session management is implemented
+  
   try {
     const client = await clientPromise;
     const db = client.db('formacion');

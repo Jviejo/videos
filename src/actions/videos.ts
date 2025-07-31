@@ -14,6 +14,8 @@ export interface Video {
 }
 
 export async function addVideo(courseId: string, formData: FormData) {
+  // TODO: Add server-side admin role validation when session management is implemented
+  
   try {
     const client = await clientPromise;
     const db = client.db('formacion');
@@ -45,6 +47,8 @@ export async function addVideo(courseId: string, formData: FormData) {
 }
 
 export async function updateVideo(videoId: string, formData: FormData) {
+  // TODO: Add server-side admin role validation when session management is implemented
+  
   try {
     const client = await clientPromise;
     const db = client.db('formacion');
@@ -103,6 +107,8 @@ export async function getNextVideoOrder(courseId: string): Promise<number> {
 }
 
 export async function deleteVideo(videoId: string) {
+  // TODO: Add server-side admin role validation when session management is implemented
+  
   try {
     const client = await clientPromise;
     const db = client.db('formacion');

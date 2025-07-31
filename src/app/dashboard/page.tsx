@@ -24,7 +24,7 @@ interface Course {
 }
 
 export default function Dashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAdmin } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCourseForm, setShowCourseForm] = useState(false);
@@ -135,13 +135,15 @@ export default function Dashboard() {
                 Bienvenido, {user?.name}. Explora nuestros cursos disponibles
               </p>
             </div>
-            <Button 
-              onClick={() => setShowCourseForm(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Agregar Curso
-            </Button>
+            {isAdmin && (
+              <Button 
+                onClick={() => setShowCourseForm(true)}
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Agregar Curso
+              </Button>
+            )}
           </div>
         </div>
 
@@ -234,22 +236,26 @@ export default function Dashboard() {
                       Ver Curso
                     </Button>
                   </Link>
-                  <Button 
-                    variant="outline" 
-                    size="icon"
-                    onClick={() => handleEditCourse(course)}
-                    className="shrink-0"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="icon"
-                    onClick={() => handleDeleteCourse(course)}
-                    className="shrink-0"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {isAdmin && (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        size="icon"
+                        onClick={() => handleEditCourse(course)}
+                        className="shrink-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="icon"
+                        onClick={() => handleDeleteCourse(course)}
+                        className="shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>

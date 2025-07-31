@@ -113,4 +113,14 @@ export async function getUserById(userId: string) {
     console.error('Error en getUserById:', error);
     return null;
   }
+}
+
+export async function validateAdminRole(userId: string): Promise<boolean> {
+  try {
+    const user = await getUserById(userId);
+    return user?.role === 'admin';
+  } catch (error) {
+    console.error('Error validating admin role:', error);
+    return false;
+  }
 } 
