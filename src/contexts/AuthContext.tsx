@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { loginUser, registerUser, getUserById } from '@/lib/auth';
+import { requestLoginCode, verifyLoginCode, getUserById } from '@/lib/auth';
 
 interface User {
   id: string;
@@ -13,9 +13,10 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  // Funciones para autenticación simplificada con códigos
+  requestLogin: (email: string) => Promise<{ success: boolean; error?: string; message?: string }>;
+  verifyLogin: (email: string, code: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
   isAuthenticated: boolean;
   isAdmin: boolean;
 }
@@ -62,10 +63,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const requestLogin = async (email: string) => {
+    try {
+      const result = await requestLoginCode(email);
+      console.log('AuthContext requestLogin result:', result); // Debug log
+      
+      if (result.success) {
+        return { success: true, message: result.message };
+      } else {
+        return { success: false, error: result.error };
+      }
+    } catch (error) {
+      console.error('Request login error:', error);
+      return { success: false, error: 'Error de conexión' };
+    }
+  };
+
+  const verifyLogin = async (email: string, code: string) => {
     try {
       setLoading(true);
-      const result = await loginUser(email, password);
+      const result = await verifyLoginCode(email, code);
       
       if (result.success && result.user) {
         setUser(result.user);
@@ -75,7 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Verify login error:', error);
       return { success: false, error: 'Error de conexión' };
     } finally {
       setLoading(false);
@@ -87,32 +104,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('userId');
   };
 
-  const register = async (email: string, password: string, name: string) => {
-    try {
-      setLoading(true);
-      const result = await registerUser(email, password, name);
-      
-      if (result.success && result.user) {
-        setUser(result.user);
-        localStorage.setItem('userId', result.user.id);
-        return { success: true };
-      } else {
-        return { success: false, error: result.error };
-      }
-    } catch (error) {
-      console.error('Register error:', error);
-      return { success: false, error: 'Error de conexión' };
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const value: AuthContextType = {
     user,
     loading,
-    login,
+    requestLogin,
+    verifyLogin,
     logout,
-    register,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin'
   };

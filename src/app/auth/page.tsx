@@ -1,16 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import LoginForm from '@/components/LoginForm';
-import RegisterForm from '@/components/RegisterForm';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -40,40 +35,14 @@ export default function AuthPage() {
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">
-            {isLogin ? 'Bienvenido de vuelta' : 'Crear cuenta'}
+            Bienvenido
           </h1>
           <p className="mt-2 text-gray-600">
-            {isLogin 
-              ? 'Inicia sesión en tu cuenta' 
-              : 'Completa el formulario para crear tu cuenta'
-            }
+            Introduce tu email para acceder a la plataforma
           </p>
         </div>
 
-        {isLogin ? <LoginForm /> : <RegisterForm />}
-
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-lg">
-              {isLogin ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}
-            </CardTitle>
-            <CardDescription>
-              {isLogin 
-                ? 'Crea una cuenta para acceder a todas las funcionalidades'
-                : 'Inicia sesión con tu cuenta existente'
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button
-              variant="outline"
-              onClick={() => setIsLogin(!isLogin)}
-              className="w-full"
-            >
-              {isLogin ? 'Crear cuenta' : 'Iniciar sesión'}
-            </Button>
-          </CardContent>
-        </Card>
+        <LoginForm />
       </div>
     </div>
   );
