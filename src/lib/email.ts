@@ -122,7 +122,7 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
     `;
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      from: process.env.EMAIL_FROM || 'Formación Tecnológica <noreply@yourdomain.com>',
       to: email,
       subject: subject,
       text: textContent,
