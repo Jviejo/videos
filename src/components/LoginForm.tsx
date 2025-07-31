@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
+import { useRouter } from 'next/navigation';
 import { Mail, Shield } from 'lucide-react';
 
 export default function LoginForm() {
@@ -18,6 +18,7 @@ export default function LoginForm() {
 
   const [isLoading, setIsLoading] = useState(false);
   const { requestLogin, verifyLogin, loading } = useAuth();
+  const router = useRouter();
 
   // Debug: Monitorear cambios en el AuthContext
   useEffect(() => {
@@ -56,10 +57,22 @@ export default function LoginForm() {
 
     try {
       const result = await verifyLogin(email, code);
-      if (!result.success) {
+      console.log('Verify login result:', result);
+      if (result.success) {
+        console.log('Login successful, redirecting to dashboard...');
+        // Pequeño delay para asegurar que el estado se actualice
+       
+        router.push('/dashboard');
+       
+        // setTimeout(() => {
+        //   console.log('Executing redirect now...');
+        //   router.push('/dashboard');
+        // }, 500);
+      } else {
         setError(result.error || 'Código inválido');
       }
-    } catch {
+    } catch (error) {
+      console.error('Error in handleCodeSubmit:', error);
       setError('Error de conexión');
     } finally {
       setIsLoading(false);

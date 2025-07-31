@@ -5,12 +5,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { LogOut, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
     logout();
+    router.push('/');
   };
 
   return (
