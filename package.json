@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "node scripts/seed-database.js",
+    "seed-modules": "node scripts/seed-modules.js",
     "update-course-order": "node scripts/update-course-order.js",
     "make-admin": "node scripts/make-admin.js"
   },
