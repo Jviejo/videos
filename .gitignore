@@ -13,6 +13,7 @@
 # testing
 /coverage
 
+/formacion_dump/
 # next.js
 /.next/
 /out/

@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const client = await clientPromise;
-    const db = client.db();
+    const db = client.db('formacion');
     const { id } = await params;
 
     const course = await db.collection('cursos').findOne({
@@ -22,7 +22,19 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(course);
+    // Fetch videos for this course
+    const videos = await db.collection('videos')
+      .find({ courseId: id })
+      .sort({ order: 1 })
+      .toArray();
+
+    // Add videos to course object
+    const courseWithVideos = {
+      ...course,
+      videos: videos
+    };
+
+    return NextResponse.json(courseWithVideos);
   } catch (error) {
     console.error('Error fetching course:', error);
     return NextResponse.json(

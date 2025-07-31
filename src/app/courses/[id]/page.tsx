@@ -5,9 +5,11 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Play, BookOpen, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Play, BookOpen, ExternalLink, Plus, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import VideoForm from '@/components/VideoForm';
+import { deleteVideo } from '@/actions/videos';
 
 interface Video {
   _id: string;
@@ -28,6 +30,7 @@ interface Course {
   students: number;
   imageUrl: string;
   tags: string[];
+  order: number;
   videos: Video[];
 }
 
@@ -36,6 +39,8 @@ export default function CourseDetail() {
   const { isAuthenticated } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showVideoForm, setShowVideoForm] = useState(false);
+  const [editingVideo, setEditingVideo] = useState<Video | null>(null);
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -56,6 +61,54 @@ export default function CourseDetail() {
       fetchCourse();
     }
   }, [id]);
+
+  const handleVideoAdded = () => {
+    const fetchCourse = async () => {
+      try {
+        const response = await fetch(`/api/courses/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setCourse(data);
+        }
+      } catch (error) {
+        console.error('Error fetching course:', error);
+      }
+    };
+    fetchCourse();
+  };
+
+  const handleEditVideo = (video: Video) => {
+    setEditingVideo(video);
+    setShowVideoForm(true);
+  };
+
+  const handleCloseVideoForm = () => {
+    setShowVideoForm(false);
+    setEditingVideo(null);
+  };
+
+  const handleDeleteVideo = async (video: Video) => {
+    const confirmDelete = window.confirm(
+      `⚠️ ADVERTENCIA: Esta acción no se puede deshacer.\n\n¿Estás seguro de que quieres eliminar el video "${video.title}"?`
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      const result = await deleteVideo(video._id);
+      
+      if (result.success) {
+        // Refresh the course data to update video list
+        handleVideoAdded();
+        alert('✅ ' + result.message);
+      } else {
+        alert('❌ ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error deleting video:', error);
+      alert('❌ Error al eliminar el video');
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -145,7 +198,16 @@ export default function CourseDetail() {
 
         {/* Videos Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Videos del Curso</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Videos del Curso</h2>
+            <Button 
+              onClick={() => setShowVideoForm(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Agregar Video
+            </Button>
+          </div>
           
           {course.videos && course.videos.length > 0 ? (
             <div className="grid gap-4">
@@ -182,6 +244,24 @@ export default function CourseDetail() {
                           </Button>
                         </Link>
                         
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditVideo(video)}
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Editar
+                        </Button>
+                        
+                        <Button 
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteVideo(video)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Eliminar
+                        </Button>
+                        
                         <a 
                           href={video.url} 
                           target="_blank" 
@@ -210,6 +290,17 @@ export default function CourseDetail() {
             </Card>
           )}
         </div>
+
+        {/* Video Form Modal */}
+        {showVideoForm && (
+          <VideoForm
+            onClose={handleCloseVideoForm}
+            onSuccess={handleVideoAdded}
+            courseId={id as string}
+            video={editingVideo || undefined}
+            mode={editingVideo ? 'edit' : 'add'}
+          />
+        )}
       </div>
     </div>
   );

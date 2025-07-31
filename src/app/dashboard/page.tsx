@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play } from 'lucide-react';
+import { Play, Plus, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import CourseForm from '@/components/CourseForm';
+import { deleteCourse } from '@/actions/courses';
 
 interface Course {
   _id: string;
@@ -18,12 +20,15 @@ interface Course {
   students: number;
   imageUrl: string;
   tags: string[];
+  order: number;
 }
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCourseForm, setShowCourseForm] = useState(false);
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -42,6 +47,54 @@ export default function Dashboard() {
 
     fetchCourses();
   }, []);
+
+  const handleCourseAdded = () => {
+    const fetchCourses = async () => {
+      try {
+        const response = await fetch('/api/courses');
+        if (response.ok) {
+          const data = await response.json();
+          setCourses(data);
+        }
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+    fetchCourses();
+  };
+
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course);
+    setShowCourseForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowCourseForm(false);
+    setEditingCourse(null);
+  };
+
+  const handleDeleteCourse = async (course: Course) => {
+    const confirmDelete = window.confirm(
+      `⚠️ ADVERTENCIA: Esta acción no se puede deshacer.\n\n¿Estás seguro de que quieres eliminar el curso "${course.title}"?\n\nEsto también eliminará todos los videos asociados al curso.`
+    );
+    
+    if (!confirmDelete) return;
+
+    try {
+      const result = await deleteCourse(course._id);
+      
+      if (result.success) {
+        // Refresh the courses list
+        handleCourseAdded();
+        alert('✅ ' + result.message);
+      } else {
+        alert('❌ ' + result.message);
+      }
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      alert('❌ Error al eliminar el curso');
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -73,12 +126,23 @@ export default function Dashboard() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Dashboard de Cursos
-          </h1>
-          <p className="text-lg text-gray-600">
-            Bienvenido, {user?.name}. Explora nuestros cursos disponibles
-          </p>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                Dashboard de Cursos
+              </h1>
+              <p className="text-lg text-gray-600">
+                Bienvenido, {user?.name}. Explora nuestros cursos disponibles
+              </p>
+            </div>
+            <Button 
+              onClick={() => setShowCourseForm(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Agregar Curso
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -124,7 +188,9 @@ export default function Dashboard() {
 
         {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
+          {courses
+            .sort((a, b) => (a.order || 999) - (b.order || 999))
+            .map((course) => (
             <Card key={course._id} className="hover:shadow-lg transition-shadow duration-300">
               <CardHeader className="pb-4">
                 <div className="flex items-center justify-between mb-2">
@@ -161,16 +227,44 @@ export default function Dashboard() {
                   ))}
                 </div>
                 
-                <Link href={`/courses/${course._id}`}>
-                  <Button className="w-full">
-                    <Play className="h-4 w-4 mr-2" />
-                    Ver Curso
+                <div className="flex gap-2">
+                  <Link href={`/courses/${course._id}`} className="flex-1">
+                    <Button className="w-full">
+                      <Play className="h-4 w-4 mr-2" />
+                      Ver Curso
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={() => handleEditCourse(course)}
+                    className="shrink-0"
+                  >
+                    <Edit className="h-4 w-4" />
                   </Button>
-                </Link>
+                  <Button 
+                    variant="destructive" 
+                    size="icon"
+                    onClick={() => handleDeleteCourse(course)}
+                    className="shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        {/* Course Form Modal */}
+        {showCourseForm && (
+          <CourseForm
+            onClose={handleCloseForm}
+            onSuccess={handleCourseAdded}
+            course={editingCourse || undefined}
+            mode={editingCourse ? 'edit' : 'add'}
+          />
+        )}
       </div>
     </div>
   );
