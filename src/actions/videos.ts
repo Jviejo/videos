@@ -18,7 +18,6 @@ export async function addVideo(courseId: string, formData: FormData) {
     const client = await clientPromise;
     const db = client.db('formacion');
     const videosCollection = db.collection('videos');
-    const coursesCollection = db.collection('cursos');
 
     const video: Omit<Video, '_id'> = {
       title: formData.get('title') as string,
@@ -30,12 +29,6 @@ export async function addVideo(courseId: string, formData: FormData) {
     };
 
     const result = await videosCollection.insertOne(video);
-    
-    // Update course to include the new video reference
-    await coursesCollection.updateOne(
-      { _id: new ObjectId(courseId) },
-      { $push: { videoIds: result.insertedId } }
-    );
     
     return { 
       success: true, 

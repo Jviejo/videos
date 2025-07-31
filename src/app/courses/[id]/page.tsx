@@ -18,6 +18,7 @@ interface Video {
   url: string;
   duration: string;
   order: number;
+  courseId: string;
 }
 
 interface Course {
