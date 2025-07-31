@@ -25,7 +25,7 @@ export async function addModule(formData: FormData) {
     const tags = formData.get('tags') as string;
     const tagsArray = tags ? tags.split(',').map(tag => tag.trim()) : [];
 
-    const module: Omit<Module, '_id'> = {
+    const moduleData: Omit<Module, '_id'> = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       aiFeature: formData.get('aiFeature') as string,
@@ -35,7 +35,7 @@ export async function addModule(formData: FormData) {
       order: parseInt(formData.get('order') as string) || 1,
     };
 
-    const result = await collection.insertOne(module);
+    const result = await collection.insertOne(moduleData);
     
     return { 
       success: true, 
@@ -62,7 +62,7 @@ export async function updateModule(moduleId: string, formData: FormData) {
     const tags = formData.get('tags') as string;
     const tagsArray = tags ? tags.split(',').map(tag => tag.trim()) : [];
 
-    const module: Omit<Module, '_id'> = {
+    const moduleData: Omit<Module, '_id'> = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       aiFeature: formData.get('aiFeature') as string,
@@ -74,7 +74,7 @@ export async function updateModule(moduleId: string, formData: FormData) {
 
     const result = await collection.updateOne(
       { _id: new ObjectId(moduleId) },
-      { $set: module }
+      { $set: moduleData }
     );
     
     if (result.matchedCount === 0) {
