@@ -4,8 +4,9 @@ import nodemailer from 'nodemailer';
 
 // Configuración del transporter de email
 const createTransporter = () => {
-  // Para MailHog (desarrollo)
-  if (process.env.EMAIL_HOST === 'localhost' || process.env.EMAIL_HOST === '127.0.0.1') {
+  // Para MailHog (desarrollo) - solo si NODE_ENV es development Y EMAIL_HOST es localhost
+  if (process.env.NODE_ENV === 'development' && 
+      (process.env.EMAIL_HOST === 'localhost' || process.env.EMAIL_HOST === '127.0.0.1' || !process.env.EMAIL_HOST)) {
     return nodemailer.createTransport({
       host: process.env.EMAIL_HOST || 'localhost',
       port: parseInt(process.env.EMAIL_PORT || '1025'),
