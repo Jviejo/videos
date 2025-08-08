@@ -10,6 +10,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { addCourse, updateCourse, getNextCourseOrder, Course } from '@/actions/courses';
 import { X } from 'lucide-react';
 
+interface Module {
+  _id: string;
+  title: string;
+  description: string;
+  aiFeature: string;
+  icon: string;
+  iconColor: string;
+  tags: string[];
+  order: number;
+}
+
 interface CourseFormProps {
   onClose: () => void;
   onSuccess: () => void;
@@ -21,6 +32,8 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [nextOrder, setNextOrder] = useState(1);
+  const [modules, setModules] = useState<Module[]>([]);
+  const [modulesLoading, setModulesLoading] = useState(true);
   
   const isEditMode = mode === 'edit' && course;
 
@@ -29,6 +42,24 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
       getNextCourseOrder().then(setNextOrder);
     }
   }, [mode]);
+
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        const response = await fetch('/api/modules');
+        if (response.ok) {
+          const data = await response.json();
+          setModules(data);
+        }
+      } catch (error) {
+        console.error('Error fetching modules:', error);
+      } finally {
+        setModulesLoading(false);
+      }
+    };
+
+    fetchModules();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -87,13 +118,18 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
               
               <div className="space-y-2">
                 <Label htmlFor="module">Módulo *</Label>
-                <Input
-                  id="module"
-                  name="module"
-                  placeholder="Nombre del módulo"
-                  defaultValue={isEditMode && course ? course.module : ''}
-                  required
-                />
+                <Select name="module" defaultValue={isEditMode && course ? course.module : ''} required>
+                  <SelectTrigger>
+                    <SelectValue placeholder={modulesLoading ? "Cargando módulos..." : "Selecciona un módulo"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {modules.map((module) => (
+                      <SelectItem key={module._id} value={module.title}>
+                        {module.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

@@ -282,7 +282,13 @@ export default function CourseDetail() {
                               </div>
                               <div className="space-y-2">
                                 {video.resources.slice(0, 3).map((resource, resourceIndex) => (
-                                  <div key={resourceIndex} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-md">
+                                  <a
+                                    key={resourceIndex}
+                                    href={resource.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
+                                  >
                                     <div className="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-sm flex-shrink-0">
                                       {getResourceIcon(resource.type)}
                                     </div>
@@ -296,7 +302,7 @@ export default function CourseDetail() {
                                         </span>
                                       </div>
                                     </div>
-                                  </div>
+                                  </a>
                                 ))}
                                 {video.resources.length > 3 && (
                                   <div className="text-xs text-gray-500 text-center py-1">
