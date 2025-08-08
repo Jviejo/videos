@@ -131,26 +131,21 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
 
     // En desarrollo, mostrar el código en consola para testing
     if (process.env.NODE_ENV === 'development') {
-      console.log(`\n📧 CÓDIGO DE VERIFICACIÓN PARA ${email}: ${code}\n`);
     }
 
     // Intentar enviar el email
     try {
       await transporter.sendMail(mailOptions);
-      console.log(`✅ Email enviado correctamente a ${email}`);
       return { success: true, message: 'Código enviado correctamente' };
     } catch (emailError) {
-      console.error('Error sending email:', emailError);
       
       // En desarrollo con MailHog, si hay error de auth, seguir funcionando
       if (process.env.NODE_ENV === 'development' && process.env.EMAIL_HOST === 'localhost') {
-        console.log('⚠️ Error con MailHog, pero código generado correctamente');
         return { success: true, message: 'Código generado (MailHog error)' };
       }
       
       // En desarrollo sin MailHog, permitir que funcione
       if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Email no enviado (desarrollo), pero código generado correctamente');
         return { success: true, message: 'Código generado (modo desarrollo)' };
       }
       
@@ -158,8 +153,7 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
     }
 
   } catch (error) {
-    console.error('Error in sendVerificationCode:', error);
-    return { success: false, message: 'Error interno del servidor' };
+    return { success: false, message: 'Error interno del servidor, ' + error };
   }
 }
 

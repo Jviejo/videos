@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import CourseForm from '@/components/CourseForm';
 import { deleteCourse } from '@/actions/courses';
 
-interface Course {
+export interface Course {
   _id: string;
   title: string;
   description: string;
@@ -21,6 +21,10 @@ interface Course {
   imageUrl: string;
   tags: string[];
   order: number;
+}
+
+interface GroupedCourses {
+  [module: string]: Course[];
 }
 
 export default function Dashboard() {
@@ -64,6 +68,7 @@ export default function Dashboard() {
   };
 
   const handleEditCourse = (course: Course) => {
+    console.log('handleEditCourse', course);
     setEditingCourse(course);
     setShowCourseForm(true);
   };
@@ -95,6 +100,21 @@ export default function Dashboard() {
       alert('❌ Error al eliminar el curso');
     }
   };
+
+  // Group courses by module
+  const groupedCourses: GroupedCourses = courses.reduce((acc, course) => {
+    const moduleName = course.module || 'Sin Módulo';
+    if (!acc[moduleName]) {
+      acc[moduleName] = [];
+    }
+    acc[moduleName].push(course);
+    return acc;
+  }, {} as GroupedCourses);
+
+  // Sort courses within each module by order
+  Object.keys(groupedCourses).forEach(moduleName => {
+    groupedCourses[moduleName].sort((a, b) => (a.order || 999) - (b.order || 999));
+  });
 
   if (!isAuthenticated) {
     return (
@@ -132,7 +152,7 @@ export default function Dashboard() {
                 Dashboard de Cursos
               </h1>
               <p className="text-lg text-gray-600">
-                Bienvenido, {user?.name}. Explora nuestros cursos disponibles
+                Bienvenido, {user?.name}. Explora nuestros cursos organizados por módulos
               </p>
             </div>
             {isAdmin && (
@@ -147,118 +167,86 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <BookOpen className="h-8 w-8 text-blue-600 mr-4" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total de Cursos</p>
-                  <p className="text-2xl font-bold text-gray-900">{courses.length}</p>
-                </div>
+        {/* Courses grouped by modules */}
+        <div className="space-y-8">
+          {Object.entries(groupedCourses).map(([moduleName, moduleCourses]) => (
+            <div key={moduleName} className="space-y-4">
+              <div className="border-b border-gray-200 pb-2">
+                <h2 className="text-2xl font-bold text-gray-900">{moduleName}</h2>
+                <p className="text-gray-600">{moduleCourses.length} curso{moduleCourses.length !== 1 ? 's' : ''}</p>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Play className="h-8 w-8 text-green-600 mr-4" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Cursos Disponibles</p>
-                  <p className="text-2xl font-bold text-gray-900">{courses.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-purple-600 mr-4" />
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Estudiantes Activos</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {courses.reduce((sum, course) => sum + course.students, 0)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div> */}
-
-        {/* Courses Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses
-            .sort((a, b) => (a.order || 999) - (b.order || 999))
-            .map((course) => (
-            <Card key={course._id} className="hover:shadow-lg transition-shadow duration-300">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between mb-2">
-                  <Badge variant="secondary" className="text-xs">
-                    {course.module}
-                  </Badge>
-                  <Badge variant={course.level === 'Principiante' ? 'default' : course.level === 'Intermedio' ? 'secondary' : 'destructive'}>
-                    {course.level}
-                  </Badge>
-                </div>
-                <CardTitle className="text-xl">{course.title}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {course.description}
-                </CardDescription>
-              </CardHeader>
               
-              <CardContent>
-                <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
-                  {/* <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-1" />
-                    {course.duration}
-                  </div>
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-1" />
-                    {course.students} estudiantes
-                  </div> */}
-                </div>
-                
-                <div className="flex flex-wrap gap-1 mb-4">
-                  {course.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-                
-                <div className="flex gap-2">
-                  <Link href={`/courses/${course._id}`} className="flex-1">
-                    <Button className="w-full">
-                      <Play className="h-4 w-4 mr-2" />
-                      Ver Curso
-                    </Button>
-                  </Link>
-                  {isAdmin && (
-                    <>
-                      <Button 
-                        variant="outline" 
-                        size="icon"
-                        onClick={() => handleEditCourse(course)}
-                        className="shrink-0"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        size="icon"
-                        onClick={() => handleDeleteCourse(course)}
-                        className="shrink-0"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {moduleCourses.map((course) => (
+                  <Card key={course._id} className="hover:shadow-lg transition-shadow duration-300">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {course.module}
+                        </Badge>
+                        <Badge variant={course.level === 'Principiante' ? 'default' : course.level === 'Intermedio' ? 'secondary' : 'destructive'}>
+                          {course.level}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-xl">{course.title}</CardTitle>
+                      <CardDescription className="line-clamp-2">
+                        {course.description}
+                      </CardDescription>
+                    </CardHeader>
+                    
+                    <CardContent>
+                      <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
+                        {/* <div className="flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          {course.duration}
+                        </div>
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-1" />
+                          {course.students} estudiantes
+                        </div> */}
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {course.tags.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Link href={`/courses/${course._id}`} className="flex-1">
+                          <Button className="w-full">
+                            <Play className="h-4 w-4 mr-2" />
+                            Ver Curso
+                          </Button>
+                        </Link>
+                        {isAdmin && (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="icon"
+                              onClick={() => handleEditCourse(course)}
+                              className="shrink-0"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              size="icon"
+                              onClick={() => handleDeleteCourse(course)}
+                              className="shrink-0"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
 

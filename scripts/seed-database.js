@@ -26,6 +26,7 @@ async function seedDatabase() {
       students: 1500,
       imageUrl: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400",
       tags: ["Básico", "Algoritmos"],
+      order: 1,
       videos: []
     };
     

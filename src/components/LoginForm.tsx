@@ -22,7 +22,6 @@ export default function LoginForm() {
 
   // Debug: Monitorear cambios en el AuthContext
   useEffect(() => {
-    console.log('AuthContext loading changed:', loading);
   }, [loading]);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -33,18 +32,14 @@ export default function LoginForm() {
 
     try {
       const result = await requestLogin(email);
-      console.log('Login result:', result); // Debug log
       if (result.success) {
-        console.log('Setting step to code and message'); // Debug log
         setMessage(result.message || 'Código enviado a tu email');
         setStep('code');
-        console.log('Step should now be code'); // Debug log
       } else {
         setError(result.error || 'Error al enviar el código');
       }
     } catch (error) {
-      console.error('Login error:', error); // Debug log
-      setError('Error de conexión');
+      setError('Error de conexión, ' + error);
     } finally {
       setIsLoading(false);
     }
@@ -57,23 +52,17 @@ export default function LoginForm() {
 
     try {
       const result = await verifyLogin(email, code);
-      console.log('Verify login result:', result);
       if (result.success) {
-        console.log('Login successful, redirecting to dashboard...');
         // Pequeño delay para asegurar que el estado se actualice
        
         router.push('/dashboard');
        
-        // setTimeout(() => {
-        //   console.log('Executing redirect now...');
-        //   router.push('/dashboard');
-        // }, 500);
+        
       } else {
         setError(result.error || 'Código inválido');
       }
     } catch (error) {
-      console.error('Error in handleCodeSubmit:', error);
-      setError('Error de conexión');
+      setError('Error de conexión, ' + error);
     } finally {
       setIsLoading(false);
     }
@@ -86,8 +75,6 @@ export default function LoginForm() {
     setError('');
   };
 
-  // Debug: Mostrar el estado actual
-  console.log('LoginForm render - step:', step, 'email:', email, 'isLoading:', isLoading);
 
   return (
     <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">

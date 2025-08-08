@@ -66,7 +66,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const requestLogin = async (email: string) => {
     try {
       const result = await requestLoginCode(email);
-      console.log('AuthContext requestLogin result:', result); // Debug log
       
       if (result.success) {
         return { success: true, message: result.message };
@@ -74,8 +73,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Request login error:', error);
-      return { success: false, error: 'Error de conexión' };
+      return { success: false, error: 'Error de conexión, ' + error };
     }
   };
 
@@ -92,8 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return { success: false, error: result.error };
       }
     } catch (error) {
-      console.error('Verify login error:', error);
-      return { success: false, error: 'Error de conexión' };
+      return { success: false, error: 'Error de conexión, ' + error };
     } finally {
       setLoading(false);
     }

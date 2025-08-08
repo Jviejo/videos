@@ -36,7 +36,7 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
     setMessage(null);
 
     const formData = new FormData(e.currentTarget);
-    const result = isEditMode 
+    const result = isEditMode && course
       ? await updateCourse(course._id!, formData)
       : await addCourse(formData);
 
@@ -80,7 +80,7 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
                   id="title"
                   name="title"
                   placeholder="Título del curso"
-                  defaultValue={isEditMode ? course.title : ''}
+                  defaultValue={isEditMode && course ? course.title : ''}
                   required
                 />
               </div>
@@ -91,7 +91,7 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
                   id="module"
                   name="module"
                   placeholder="Nombre del módulo"
-                  defaultValue={isEditMode ? course.module : ''}
+                  defaultValue={isEditMode && course ? course.module : ''}
                   required
                 />
               </div>
@@ -103,7 +103,7 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
                 id="description"
                 name="description"
                 placeholder="Descripción del curso"
-                defaultValue={isEditMode ? course.description : ''}
+                                  defaultValue={isEditMode && course ? course.description : ''}
                 rows={3}
                 required
               />
@@ -116,14 +116,14 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
                   id="duration"
                   name="duration"
                   placeholder="ej: 2 horas"
-                  defaultValue={isEditMode ? course.duration : ''}
+                  defaultValue={isEditMode && course ? course.duration : ''}
                   required
                 />
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="level">Nivel *</Label>
-                <Select name="level" defaultValue={isEditMode ? course.level : ''} required>
+                <Select name="level" defaultValue={isEditMode && course ? course.level : ''} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona nivel" />
                   </SelectTrigger>
@@ -143,19 +143,19 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
                   type="number"
                   placeholder="0"
                   min="0"
-                  defaultValue={isEditMode ? course.students.toString() : '0'}
+                  defaultValue={isEditMode && course ? course.students.toString() : '0'}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="order">Orden *</Label>
+                <Label htmlFor="order">Orden * order {course?.order }</Label>
                 <Input
                   id="order"
                   name="order"
-                  type="number"
+                  type="text"
                   min="1"
                   placeholder="Posición del curso"
-                  defaultValue={isEditMode ? course.order.toString() : nextOrder.toString()}
+                  defaultValue={isEditMode && course && course.order ? course.order.toString() : nextOrder.toString()}
                   required
                 />
                 <p className="text-xs text-gray-500">
@@ -171,7 +171,7 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
                 name="imageUrl"
                 type="url"
                 placeholder="https://ejemplo.com/imagen.jpg"
-                defaultValue={isEditMode ? course.imageUrl : ''}
+                defaultValue={isEditMode && course ? course.imageUrl : ''}
               />
             </div>
 
@@ -181,7 +181,7 @@ export default function CourseForm({ onClose, onSuccess, course, mode = 'add' }:
                 id="tags"
                 name="tags"
                 placeholder="javascript, react, frontend"
-                defaultValue={isEditMode ? course.tags.join(', ') : ''}
+                defaultValue={isEditMode && course ? course.tags.join(', ') : ''}
               />
             </div>
 
