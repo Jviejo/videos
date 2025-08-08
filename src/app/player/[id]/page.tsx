@@ -5,9 +5,16 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Play, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Play, ExternalLink, FileText, Video, Image, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+
+interface Resource {
+  _id?: string;
+  type: 'video' | 'pdf' | 'html' | 'imagen';
+  url: string;
+  description: string;
+}
 
 interface Video {
   _id: string;
@@ -17,6 +24,7 @@ interface Video {
   duration: string;
   order: number;
   courseId?: string;
+  resources?: Resource[];
 }
 
 export default function VideoPlayer() {
@@ -24,6 +32,36 @@ export default function VideoPlayer() {
   const { isAuthenticated } = useAuth();
   const [video, setVideo] = useState<Video | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const getResourceIcon = (type: string) => {
+    switch (type) {
+      case 'pdf':
+        return <FileText className="h-4 w-4" />;
+      case 'video':
+        return <Video className="h-4 w-4" />;
+      case 'imagen':
+        return <Image className="h-4 w-4" />;
+      case 'html':
+        return <Globe className="h-4 w-4" />;
+      default:
+        return <FileText className="h-4 w-4" />;
+    }
+  };
+
+  const getResourceTypeLabel = (type: string) => {
+    switch (type) {
+      case 'pdf':
+        return 'PDF';
+      case 'video':
+        return 'Video';
+      case 'imagen':
+        return 'Imagen';
+      case 'html':
+        return 'HTML';
+      default:
+        return type;
+    }
+  };
 
   useEffect(() => {
     const fetchVideo = async () => {
@@ -189,6 +227,55 @@ export default function VideoPlayer() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Resources Section */}
+        {video.resources && video.resources.length > 0 && (
+          <div className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recursos Adicionales</CardTitle>
+                <CardDescription>
+                  Material complementario para este video
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4">
+                  {video.resources.map((resource, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-lg">
+                          {getResourceIcon(resource.type)}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {getResourceTypeLabel(resource.type)}
+                            </Badge>
+                            <h4 className="font-medium text-gray-900">
+                              {resource.description}
+                            </h4>
+                          </div>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {resource.url}
+                          </p>
+                        </div>
+                      </div>
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Abrir
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </div>
   );

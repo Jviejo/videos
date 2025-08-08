@@ -10,7 +10,6 @@ export async function GET() {
       .find({})
       .sort({ order: 1, _id: 1 })
       .toArray();
-    console.log(courses);
     return NextResponse.json(courses);
   } catch (error) {
     console.error('Error fetching courses:', error);

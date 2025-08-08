@@ -68,7 +68,6 @@ export default function Dashboard() {
   };
 
   const handleEditCourse = (course: Course) => {
-    console.log('handleEditCourse', course);
     setEditingCourse(course);
     setShowCourseForm(true);
   };

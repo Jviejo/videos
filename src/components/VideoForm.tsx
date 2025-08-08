@@ -6,8 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { addVideo, updateVideo, getNextVideoOrder, Video } from '@/actions/videos';
-import { X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { addVideo, updateVideo, getNextVideoOrder, Video, Resource } from '@/actions/videos';
+import { X, Plus, Trash2 } from 'lucide-react';
 
 interface VideoFormProps {
   onClose: () => void;
@@ -21,8 +22,23 @@ export default function VideoForm({ onClose, onSuccess, courseId, video, mode = 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [nextOrder, setNextOrder] = useState(1);
+  const [resources, setResources] = useState<Resource[]>(video?.resources || []);
   
   const isEditMode = mode === 'edit' && video;
+
+  const addResource = () => {
+    setResources([...resources, { type: 'pdf', url: '', description: '' }]);
+  };
+
+  const removeResource = (index: number) => {
+    setResources(resources.filter((_, i) => i !== index));
+  };
+
+  const updateResource = (index: number, field: keyof Resource, value: string) => {
+    const updatedResources = [...resources];
+    updatedResources[index] = { ...updatedResources[index], [field]: value };
+    setResources(updatedResources);
+  };
 
   useEffect(() => {
     if (mode === 'add') {
@@ -36,6 +52,14 @@ export default function VideoForm({ onClose, onSuccess, courseId, video, mode = 
     setMessage(null);
 
     const formData = new FormData(e.currentTarget);
+    
+    // Add resources to form data
+    resources.forEach((resource) => {
+      formData.append('resourceType', resource.type);
+      formData.append('resourceUrl', resource.url);
+      formData.append('resourceDescription', resource.description);
+    });
+
     const result = isEditMode 
       ? await updateVideo(video._id!, formData)
       : await addVideo(courseId, formData);
@@ -135,6 +159,86 @@ export default function VideoForm({ onClose, onSuccess, courseId, video, mode = 
               <p className="text-xs text-gray-500">
                 Define el orden de aparición del video en el curso
               </p>
+            </div>
+
+            {/* Recursos */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Recursos Adicionales</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addResource}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Agregar Recurso
+                </Button>
+              </div>
+              
+              {resources.length === 0 && (
+                <p className="text-sm text-gray-500 italic">
+                  No hay recursos adicionales agregados
+                </p>
+              )}
+              
+              {resources.map((resource, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Recurso {index + 1}</h4>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeResource(index)}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <Label>Tipo *</Label>
+                      <Select
+                        value={resource.type}
+                        onValueChange={(value) => updateResource(index, 'type', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="video">Video</SelectItem>
+                          <SelectItem value="pdf">PDF</SelectItem>
+                          <SelectItem value="html">HTML</SelectItem>
+                          <SelectItem value="imagen">Imagen</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>URL *</Label>
+                      <Input
+                        placeholder="https://ejemplo.com/recurso"
+                        value={resource.url}
+                        onChange={(e) => updateResource(index, 'url', e.target.value)}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Descripción *</Label>
+                      <Input
+                        placeholder="Descripción del recurso"
+                        value={resource.description}
+                        onChange={(e) => updateResource(index, 'description', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
             {message && (

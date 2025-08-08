@@ -5,11 +5,18 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Play, BookOpen, ExternalLink, Plus, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Play, BookOpen, ExternalLink, Plus, Edit, Trash2, FileText, Video, Image, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import VideoForm from '@/components/VideoForm';
 import { deleteVideo } from '@/actions/videos';
+
+interface Resource {
+  _id?: string;
+  type: 'video' | 'pdf' | 'html' | 'imagen';
+  url: string;
+  description: string;
+}
 
 interface Video {
   _id: string;
@@ -19,6 +26,7 @@ interface Video {
   duration: string;
   order: number;
   courseId: string;
+  resources?: Resource[];
 }
 
 interface Course {
@@ -42,6 +50,36 @@ export default function CourseDetail() {
   const [loading, setLoading] = useState(true);
   const [showVideoForm, setShowVideoForm] = useState(false);
   const [editingVideo, setEditingVideo] = useState<Video | null>(null);
+
+  const getResourceIcon = (type: string) => {
+    switch (type) {
+      case 'pdf':
+        return <FileText className="h-4 w-4" />;
+      case 'video':
+        return <Video className="h-4 w-4" />;
+      case 'imagen':
+        return <Image className="h-4 w-4" />;
+      case 'html':
+        return <Globe className="h-4 w-4" />;
+      default:
+        return <FileText className="h-4 w-4" />;
+    }
+  };
+
+  const getResourceTypeLabel = (type: string) => {
+    switch (type) {
+      case 'pdf':
+        return 'PDF';
+      case 'video':
+        return 'Video';
+      case 'imagen':
+        return 'Imagen';
+      case 'html':
+        return 'HTML';
+      default:
+        return type;
+    }
+  };
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -232,10 +270,42 @@ export default function CourseDetail() {
                           <p className="text-gray-600 text-sm mb-2">
                             {video.description}
                           </p>
-                          {/* <div className="flex items-center text-xs text-gray-500">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {video.duration}
-                          </div> */}
+                          
+                          {/* Resources Section */}
+                          {video.resources && video.resources.length > 0 && (
+                            <div className="mt-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-medium text-gray-700">Recursos:</span>
+                                <Badge variant="outline" className="text-xs">
+                                  {video.resources.length} recurso{video.resources.length !== 1 ? 's' : ''}
+                                </Badge>
+                              </div>
+                              <div className="space-y-2">
+                                {video.resources.slice(0, 3).map((resource, resourceIndex) => (
+                                  <div key={resourceIndex} className="flex items-center gap-2 bg-gray-50 px-3 py-2 rounded-md">
+                                    <div className="flex items-center justify-center w-6 h-6 bg-blue-100 rounded-sm flex-shrink-0">
+                                      {getResourceIcon(resource.type)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Badge variant="outline" className="text-xs">
+                                          {getResourceTypeLabel(resource.type)}
+                                        </Badge>
+                                        <span className="text-xs text-gray-500 truncate">
+                                          {resource.description}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                                {video.resources.length > 3 && (
+                                  <div className="text-xs text-gray-500 text-center py-1">
+                                    +{video.resources.length - 3} recurso{video.resources.length - 3 !== 1 ? 's' : ''} más
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       

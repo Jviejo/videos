@@ -3,6 +3,13 @@
 import clientPromise from '@/lib/db';
 import { ObjectId } from 'mongodb';
 
+export interface Resource {
+  _id?: string;
+  type: 'video' | 'pdf' | 'html' | 'imagen';
+  url: string;
+  description: string;
+}
+
 export interface Video {
   _id?: string;
   title: string;
@@ -11,6 +18,7 @@ export interface Video {
   duration: string;
   order: number;
   courseId: string;
+  resources?: Resource[];
 }
 
 export async function addVideo(courseId: string, formData: FormData) {
@@ -21,6 +29,22 @@ export async function addVideo(courseId: string, formData: FormData) {
     const db = client.db('formacion');
     const videosCollection = db.collection('videos');
 
+    // Parse resources from form data
+    const resources: Resource[] = [];
+    const resourceTypes = formData.getAll('resourceType') as string[];
+    const resourceUrls = formData.getAll('resourceUrl') as string[];
+    const resourceDescriptions = formData.getAll('resourceDescription') as string[];
+
+    for (let i = 0; i < resourceTypes.length; i++) {
+      if (resourceTypes[i] && resourceUrls[i] && resourceDescriptions[i]) {
+        resources.push({
+          type: resourceTypes[i] as 'video' | 'pdf' | 'html' | 'imagen',
+          url: resourceUrls[i],
+          description: resourceDescriptions[i],
+        });
+      }
+    }
+
     const video: Omit<Video, '_id'> = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
@@ -28,6 +52,7 @@ export async function addVideo(courseId: string, formData: FormData) {
       duration: formData.get('duration') as string,
       order: parseInt(formData.get('order') as string) || 1,
       courseId: courseId,
+      resources: resources,
     };
 
     const result = await videosCollection.insertOne(video);
@@ -54,12 +79,29 @@ export async function updateVideo(videoId: string, formData: FormData) {
     const db = client.db('formacion');
     const collection = db.collection('videos');
 
+    // Parse resources from form data
+    const resources: Resource[] = [];
+    const resourceTypes = formData.getAll('resourceType') as string[];
+    const resourceUrls = formData.getAll('resourceUrl') as string[];
+    const resourceDescriptions = formData.getAll('resourceDescription') as string[];
+
+    for (let i = 0; i < resourceTypes.length; i++) {
+      if (resourceTypes[i] && resourceUrls[i] && resourceDescriptions[i]) {
+        resources.push({
+          type: resourceTypes[i] as 'video' | 'pdf' | 'html' | 'imagen',
+          url: resourceUrls[i],
+          description: resourceDescriptions[i],
+        });
+      }
+    }
+
     const video: Omit<Video, '_id' | 'courseId'> = {
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       url: formData.get('url') as string,
       duration: formData.get('duration') as string,
       order: parseInt(formData.get('order') as string) || 1,
+      resources: resources,
     };
 
     const result = await collection.updateOne(
