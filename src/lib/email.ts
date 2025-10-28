@@ -22,7 +22,7 @@ const createTransporter = () => {
   // Para producción: usa Resend SMTP
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.resend.com',
-    port: parseInt(process.env.EMAIL_PORT || '465'),
+    port: parseInt(process.env.EMAIL_PORT || '587'),
     secure: true, // true para 465, false para otros puertos
     auth: {
       user: 'resend',
