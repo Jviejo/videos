@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
+import { TempsAnalyticsProvider } from "@temps-sdk/react-analytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "DeviaToday - Formación en Tecnologías Modernas",
-  description: "Plataforma de formación en tecnologías modernas potenciada por IA",
+  description:
+    "Plataforma de formación en tecnologías modernas potenciada por IA",
 };
 
 export default function RootLayout({
@@ -29,12 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <Header />
-          <main>
-            {children}
-          </main>
-        </AuthProvider>
+        <TempsAnalyticsProvider>
+          <AuthProvider>
+            <Header />
+            <main>{children}</main>
+          </AuthProvider>
+        </TempsAnalyticsProvider>
       </body>
     </html>
   );
