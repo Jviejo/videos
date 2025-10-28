@@ -1,31 +1,34 @@
-'use server';
+"use server";
 
-import nodemailer from 'nodemailer';
+import nodemailer from "nodemailer";
 
 // Configuración del transporter de email
 const createTransporter = () => {
   // Para MailHog (desarrollo) - solo si NODE_ENV es development Y EMAIL_HOST es localhost
-  if (process.env.NODE_ENV === 'development' && 
-      (process.env.EMAIL_HOST === 'localhost' || process.env.EMAIL_HOST === '127.0.0.1' || !process.env.EMAIL_HOST)) {
+  if (
+    process.env.NODE_ENV === "development" &&
+    (process.env.EMAIL_HOST === "localhost" ||
+      process.env.EMAIL_HOST === "127.0.0.1" ||
+      !process.env.EMAIL_HOST)
+  ) {
     return nodemailer.createTransport({
-      host: process.env.EMAIL_HOST || 'localhost',
-      port: parseInt(process.env.EMAIL_PORT || '1025'),
+      host: process.env.EMAIL_HOST || "localhost",
+      port: parseInt(process.env.EMAIL_PORT || "1025"),
       secure: false,
       // MailHog no requiere autenticación
       ignoreTLS: true,
       tls: {
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+      },
     });
   }
-  
+
   // Para producción: usa Resend SMTP
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.resend.com',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: true, // true para 465, false para otros puertos
+    host: process.env.EMAIL_HOST || "smtp.resend.com",
+    port: parseInt(process.env.EMAIL_PORT || "587"),
     auth: {
-      user: 'resend',
+      user: "resend",
       pass: process.env.RESEND_API_KEY, // tu API key de Resend
     },
   });
@@ -37,13 +40,18 @@ export async function generateVerificationCode(): Promise<string> {
 }
 
 // Enviar código de verificación por email
-export async function sendVerificationCode(email: string, code: string, type: 'login' | 'register' = 'login') {
+export async function sendVerificationCode(
+  email: string,
+  code: string,
+  type: "login" | "register" = "login"
+) {
   try {
     const transporter = createTransporter();
 
-    const subject = type === 'register' 
-      ? '🔐 Código de verificación - Crear cuenta'
-      : '🔐 Código de verificación - Iniciar sesión';
+    const subject =
+      type === "register"
+        ? "🔐 Código de verificación - Crear cuenta"
+        : "🔐 Código de verificación - Iniciar sesión";
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -69,7 +77,11 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
             </div>
             <div class="content">
               <h2>Hola 👋</h2>
-              <p>Has solicitado ${type === 'register' ? 'crear una nueva cuenta' : 'iniciar sesión'} en nuestra plataforma de formación.</p>
+              <p>Has solicitado ${
+                type === "register"
+                  ? "crear una nueva cuenta"
+                  : "iniciar sesión"
+              } en nuestra plataforma de formación.</p>
               
               <div class="code-box">
                 <p style="margin: 0; font-size: 18px; color: #666;">Tu código de verificación es:</p>
@@ -85,7 +97,9 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
                 </ul>
               </div>
 
-              <p>Una vez que tengas el código, vuelve a la aplicación e introdúcelo para completar ${type === 'register' ? 'el registro' : 'el inicio de sesión'}.</p>
+              <p>Una vez que tengas el código, vuelve a la aplicación e introdúcelo para completar ${
+                type === "register" ? "el registro" : "el inicio de sesión"
+              }.</p>
               
               <p style="margin-top: 30px;">
                 <strong>¿Necesitas ayuda?</strong><br>
@@ -106,7 +120,9 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
       
       Hola,
       
-      Has solicitado ${type === 'register' ? 'crear una nueva cuenta' : 'iniciar sesión'} en nuestra plataforma.
+      Has solicitado ${
+        type === "register" ? "crear una nueva cuenta" : "iniciar sesión"
+      } en nuestra plataforma.
       
       Tu código de verificación es: ${code}
       
@@ -115,14 +131,18 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
       - No compartas este código con nadie
       - Si no solicitaste este código, ignora este email
       
-      Una vez que tengas el código, vuelve a la aplicación e introdúcelo para completar ${type === 'register' ? 'el registro' : 'el inicio de sesión'}.
+      Una vez que tengas el código, vuelve a la aplicación e introdúcelo para completar ${
+        type === "register" ? "el registro" : "el inicio de sesión"
+      }.
       
       Saludos,
       Equipo de Formación Tecnológica
     `;
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM || 'Formación Tecnológica <noreply@yourdomain.com>',
+      from:
+        process.env.EMAIL_FROM ||
+        "Formación Tecnológica <noreply@yourdomain.com>",
       to: email,
       subject: subject,
       text: textContent,
@@ -130,35 +150,40 @@ export async function sendVerificationCode(email: string, code: string, type: 'l
     };
 
     // En desarrollo, mostrar el código en consola para testing
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
     }
 
     // Intentar enviar el email
     try {
       await transporter.sendMail(mailOptions);
-      return { success: true, message: 'Código enviado correctamente' };
+      return { success: true, message: "Código enviado correctamente" };
     } catch (emailError) {
-      
       // En desarrollo con MailHog, si hay error de auth, seguir funcionando
-      if (process.env.NODE_ENV === 'development' && process.env.EMAIL_HOST === 'localhost') {
-        return { success: true, message: 'Código generado (MailHog error)' };
+      if (
+        process.env.NODE_ENV === "development" &&
+        process.env.EMAIL_HOST === "localhost"
+      ) {
+        return { success: true, message: "Código generado (MailHog error)" };
       }
-      
-      // En desarrollo sin MailHog, permitir que funcione
-      if (process.env.NODE_ENV === 'development') {
-        return { success: true, message: 'Código generado (modo desarrollo)' };
-      }
-      
-      return { success: false, message: 'Error al enviar el código por email' };
-    }
 
+      // En desarrollo sin MailHog, permitir que funcione
+      if (process.env.NODE_ENV === "development") {
+        return { success: true, message: "Código generado (modo desarrollo)" };
+      }
+
+      return { success: false, message: "Error al enviar el código por email" };
+    }
   } catch (error) {
-    return { success: false, message: 'Error interno del servidor, ' + error };
+    return { success: false, message: "Error interno del servidor, " + error };
   }
 }
 
 // Verificar si un código es válido (tiempo y valor)
-export async function isCodeValid(storedCode: string, storedTimestamp: Date, inputCode: string): Promise<boolean> {
+export async function isCodeValid(
+  storedCode: string,
+  storedTimestamp: Date,
+  inputCode: string
+): Promise<boolean> {
   if (!storedCode || !storedTimestamp || !inputCode) {
     return false;
   }
