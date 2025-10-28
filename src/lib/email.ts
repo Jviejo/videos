@@ -158,6 +158,7 @@ export async function sendVerificationCode(
       await transporter.sendMail(mailOptions);
       return { success: true, message: "Código enviado correctamente" };
     } catch (emailError) {
+      console.error("Error al enviar el código por email", emailError);
       // En desarrollo con MailHog, si hay error de auth, seguir funcionando
       if (
         process.env.NODE_ENV === "development" &&
